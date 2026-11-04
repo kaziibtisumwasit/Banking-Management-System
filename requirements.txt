@@ -5,5 +5,7 @@ Django
 django-crispy-forms
 django-email
 django-environ
+gunicorn
 psycopg2-binary
 sqlparse
+whitenoise

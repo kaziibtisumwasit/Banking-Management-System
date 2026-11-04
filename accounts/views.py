@@ -1,111 +1,98 @@
-from django.shortcuts import render,redirect
+from django.shortcuts import render, redirect
 from django.views.generic import FormView
-from django.contrib.auth.views import LoginView,LogoutView
-from .forms import UserRegistrationForm ,UserUpdateForm
-from django.urls import reverse_lazy
-from django.contrib.auth import login,logout
-from django.views import View
-from django.contrib.auth.views import PasswordChangeView
+from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.mail import EmailMessage,EmailMultiAlternatives
+from django.contrib.auth import login, logout
+from django.contrib import messages
+from django.urls import reverse_lazy
+from django.views import View
+from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
+from .forms import UserRegistrationForm, UserUpdateForm
 
-def profile_update_email(user,email_subject,email_template_name):
-    message = render_to_string(email_template_name,{
-        'user' : user,
-        'email_subject' : email_subject,
-        
-    })
-    to_email = user.email
-    send_email = EmailMultiAlternatives(email_subject,'',to=[to_email])
-    send_email.attach_alternative(message,'text/html')
-    send_email.send()
-# Create your views here.
-##Class based View
-##For form --> formview
-##For Showing Details of specific --> detailsview
-##For Showing multiple elements or multiple things or showing multiple product - >> listview
 
-##Templete_name = Je template e show korbo 
-##form_class = Je form ta render korbo 
-## success_url = je 
-## CreateView --> Single  Model handle kore
-## FormView --> Multiple Model handle kore
+def profile_update_email(user, email_subject, email_template_name):
+    if not user.email:
+        return
+    try:
+        message = render_to_string(
+            email_template_name,
+            {
+                "user": user,
+                "email_subject": email_subject,
+            },
+        )
+        send_email = EmailMultiAlternatives(email_subject, "", to=[user.email])
+        send_email.attach_alternative(message, "text/html")
+        send_email.send()
+    except Exception:
+        pass
+
+
 class UserRegistrationView(FormView):
-    template_name = 'accounts/reg.html'
+    template_name = "accounts/reg.html"
     form_class = UserRegistrationForm
-    success_url = reverse_lazy('profile_update')
-    
-    def form_valid(self,form):
-        print(form.cleaned_data)
+    success_url = reverse_lazy("profile_update")
+
+    def form_valid(self, form):
         user = form.save()
-        login(self.request,user) ## JE user ti request korse oi user ke login korlam
-        print(user)
-        return super().form_valid(form) # this function call it self ,If everything are correct
-    
-        
+        login(self.request, user)
+        messages.success(
+            self.request,
+            f"Welcome to NexusBank, {user.first_name or user.username}! Your account #{user.account.account_no} is ready.",
+        )
+        return super().form_valid(form)
+
+
 class UserLoginView(LoginView):
-    template_name ='accounts/user_login.html'
+    template_name = "accounts/user_login.html"
+
     def get_success_url(self):
-        return reverse_lazy('home')
-    
+        messages.success(self.request, f"Welcome back, {self.request.user.first_name or self.request.user.username}!")
+        return reverse_lazy("home")
+
+
 class UserLogout(LogoutView):
     def get_success_url(self):
         if self.request.user.is_authenticated:
             logout(self.request)
-        return reverse_lazy('home')
+        return reverse_lazy("home")
+
 
 def userLogout(request):
     if request.user.is_authenticated:
         logout(request)
-    return redirect('home')
+        messages.info(request, "You have been safely logged out.")
+    return redirect("home")
 
 
+class UserProfileUpdate(LoginRequiredMixin, View):
+    template_name = "accounts/profile.html"
+    title = "Profile & Account Settings"
+
+    def get(self, request):
+        form = UserUpdateForm(instance=request.user)
+        return render(request, self.template_name, {"form": form, "title": self.title})
+
+    def post(self, request):
+        form = UserUpdateForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Your profile information has been updated.")
+            return redirect("profile_update")
+        return render(request, self.template_name, {"form": form, "title": self.title})
 
 
-class UserProfileUpdate(View):
-    template_name = 'accounts/profile.html'
-    # title = "Update Profile"
-
-    def get(self, request): ## page visit time e user ke ja show korbe ta get
-        form = UserUpdateForm(instance=request.user) ## request.user holo current logged in user, instance=request.user means the form will be pre-filled with the current user's data
-        ## instace = request.user dewar karone form er field ghula current logged in user er data diye pre-filled hobe. jodi instance na dewa hoy tahole form er field gula empty thakbe.
-        return render(request, self.template_name, {'form': form})
-
-    def post(self, request):   ## user jokhon form submit korbe tokhon post method use hoi
-        form = UserUpdateForm(request.POST, instance=request.user)  ## request.POST holo user er dewa notun data , instance =request.user holo current user er data.instance dewa te notun user create hobe na aghe user er data updata korbe
-        if form.is_valid(): ## Form validation check korbe
-            ## form ta jodi valid na hoi form e error msg show korbe
-            form.save() ## jodi valid hoi database e save hobe
-            return redirect('profile')  # Redirect to the user's profile page
-        return render(request, self.template_name, {'form': form}) ## template render hobe , frontend e form pathabe
-    
-    # def get_context_data(self,**kwargs):
-    #     context = super().get_context_data(**kwargs)
-    #     context['title'] = self.title
-    #     return context
-    
-    
-    
-    
 class ChangePassword(LoginRequiredMixin, PasswordChangeView):
     template_name = "accounts/change_password.html"
     success_url = reverse_lazy("profile_update")
 
     def form_valid(self, form):
-        # django buildin logic use kore password change korbe & session update korbe
         response = super().form_valid(form)
-
-        try:
-            # Password change successful hole user ke email pathabe
-            profile_update_email(
-                self.request.user,
-                "Password Changed Successfully",
-                "accounts/change_password_email.html",
-            )
-        except Exception:
-            # email pathate problem hole email pathano skip korbe, but password change hobe
-            pass
-
-        # user ke success url e redirect korbe
+        messages.success(self.request, "Your password has been changed successfully.")
+        profile_update_email(
+            self.request.user,
+            "Password Changed Successfully",
+            "accounts/change_password_email.html",
+        )
         return response

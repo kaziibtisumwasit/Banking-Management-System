@@ -1,103 +1,118 @@
-{% extends 'base.html' %} 
+{% extends 'base.html' %}
 {% load static %}
-{% load humanize %}  ## ekok doshok sotok er coma ghula handle kore humanize , Example : 10000 -> 10,000 
-<!-- humanize mane holo : 10,000.00 , ei .00 & 10 er por , add korlam eita holo humanize er kaj -->
- <!-- is e template filter which is make data human readable -->
- <!-- is a django built in module provides a set of template filters to make data more human readable -->
+{% load humanize %}
+
 {% block head_title %}
-<title>{{ title }}</title>
-{% endblock %} 
-
-
+<title>{{ title }} — NexusBank</title>
+{% endblock %}
 
 {% block body %}
+<div class="space-y-6 my-4">
+    <!-- Top Summary Header -->
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div>
+            <span class="text-xs font-semibold uppercase tracking-widest text-indigo-400">Account Statement</span>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-white mt-1">Transaction Report</h1>
+            <p class="text-sm text-slate-400 mt-1">Complete history of deposits, withdrawals, transfers, and loans for Account #{{ account.account_no }}</p>
+        </div>
 
-
-<div class="my-10 py-3 px-4 bg-white rounded-xl shadow-md">
-  <h1 class="font-bold text-3xl text-center pb-5 pt-2">Transaction Report</h1>
-  <hr />
-  <form method="get" action="{% url 'transaction_report' %}">
-    <div class="flex justify-center">
-      <div
-        class="mt-10 pl-3 pr-2 bg-white border rounded-md border-gray-500 flex justify-between items-center relative w-4/12 mx-2"
-      >
-        <label for="start_date">From:</label>
-        <input
-          class="appearance-none w-full outline-none focus:outline-none active:outline-none"
-          type="date"
-          id="start_date"
-          name="start_date"
-        />
-      </div>
- 
-      <div
-        class="mt-10 pl-3 pr-2 bg-white border rounded-md border-gray-500 flex justify-between items-center relative w-4/12"
-      >
-        <label for="end_date">To:</label>
-        <input
-          class="appearance-none w-full outline-none focus:outline-none active:outline-none"
-          type="date"
-          id="end_date"
-          name="end_date"
-        />
-      </div>
-      <div class="mt-10 pl-3 pr-2 flex justify-between items-center relative w-4/12">
-        <button
-          class="bg-blue-900 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-          type="submit"
-        >
-          Filter
-        </button>
-      </div>
+        <div class="px-5 py-4 rounded-2xl bg-slate-950 border border-slate-800 flex items-center gap-4">
+            <div>
+                <span class="text-xs text-slate-400 block">Current Available Balance</span>
+                <span class="text-2xl font-extrabold text-emerald-400">${{ account.balance|floatformat:2|intcomma }}</span>
+            </div>
+        </div>
     </div>
-  </form>
-  <table
-    class="table-auto mx-auto w-full px-5 rounded-xl mt-8 border dark:border-neutral-500"
-  >
-    <thead class="bg-purple-900 text-white text-left">
-      <tr
-        class="bg-gradient-to-tr from-indigo-600 to-purple-600 rounded-md py-2 px-4 text-white font-bold"
-      >
-        <th class="px-4 py-2">Date</th>
-        <th class="px-4 py-2">Transaction Type</th>
-        <th class="px-4 py-2">Amount</th>
-        <th class="px-4 py-2">Balance After Transaction</th>
-      </tr>
-    </thead>
-    <tbody>
-        <!-- Transaction model er sob access korte parbo object_list er maddhome -->
-      {% for transaction in object_list %}
-      <tr class="border-b dark:border-neutral-500">
-        <td class="px-4 py-2">
-          {{ transaction.time_stamp|date:"F d, Y h:i A" }}
-          <!-- F full Month name , d Date , Y Year, h Hour , A am or pm -->
-        </td>
-        <td class="px-4 py-3 text-s border">
-          <span
-            class="px-2 py-1 font-bold leading-tight rounded-sm {% if transaction.get_transaction_type_display == 'Withdrawal' %} text-red-700 bg-red-100 {% else %} text-green-700 bg-green-100 {% endif %}"
-          >
-            {{ transaction.get_transaction_type_display }} 
-             <!-- ## get_ diye transaction_type diye backend e je nam ache ta display kortesi -->
-          </span>
-        </td>
-        <td class="px-4 py-2">
-            <!-- floatformate:2 mane holo float value 2 ghor -->
-             <!-- intcomma is a humanize element -->
-          $ {{ transaction.amount|floatformat:2|intcomma }} 
-           
-        </td>
-        <td class="px-4 py-2">
-          $ {{ transaction.balance_after_transaction|floatformat:2|intcomma }}
-        </td>
-      </tr>
-      {% endfor %}
-      <tr class="bg-gray-800 text-white">
-        <th class="px-4 py-2 text-right" colspan="3">Current Balance</th>
-        <th class="px-4 py-2 text-left">
-          $ {{ account.balance|floatformat:2|intcomma }}
-        </th>
-      </tr>
-    </tbody>
-  </table>
+
+    <!-- Date Range Filter Bar -->
+    <form method="get" action="{% url 'transaction_report' %}" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-stretch sm:items-end gap-4">
+        <div class="flex-1">
+            <label for="start_date" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">From Date</label>
+            <input
+                class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"
+                type="date"
+                id="start_date"
+                name="start_date"
+                value="{{ start_date }}">
+        </div>
+        <div class="flex-1">
+            <label for="end_date" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">To Date</label>
+            <input
+                class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"
+                type="date"
+                id="end_date"
+                name="end_date"
+                value="{{ end_date }}">
+        </div>
+        <div class="flex gap-2">
+            <button
+                class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold py-2.5 px-6 rounded-xl transition"
+                type="submit">
+                Apply Filter
+            </button>
+            <a href="{% url 'transaction_report' %}" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold py-2.5 px-4 rounded-xl transition">
+                Reset
+            </a>
+        </div>
+    </form>
+
+    <!-- Statement Table -->
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-950/80 border-b border-slate-800 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                        <th class="px-6 py-4">Date & Time</th>
+                        <th class="px-6 py-4">Transaction Type</th>
+                        <th class="px-6 py-4 text-right">Amount</th>
+                        <th class="px-6 py-4 text-right">Balance After Transaction</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/70 text-sm">
+                    {% for transaction in object_list %}
+                    <tr class="hover:bg-slate-800/40 transition">
+                        <td class="px-6 py-4 text-slate-300 whitespace-nowrap">
+                            {{ transaction.time_stamp|date:"M d, Y • h:i A" }}
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold
+                                {% if transaction.get_transaction_type_display == 'Deposit' or transaction.get_transaction_type_display == 'Money Received' %}
+                                    bg-emerald-500/15 text-emerald-300 border border-emerald-500/30
+                                {% elif transaction.get_transaction_type_display == 'Withdrawal' or transaction.get_transaction_type_display == 'Money Send' %}
+                                    bg-rose-500/15 text-rose-300 border border-rose-500/30
+                                {% elif transaction.get_transaction_type_display == 'Loan Paid' %}
+                                    bg-sky-500/15 text-sky-300 border border-sky-500/30
+                                {% else %}
+                                    bg-amber-500/15 text-amber-300 border border-amber-500/30
+                                {% endif %}">
+                                {{ transaction.get_transaction_type_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-right font-mono font-semibold text-white">
+                            ${{ transaction.amount|floatformat:2|intcomma }}
+                        </td>
+                        <td class="px-6 py-4 text-right font-mono text-slate-300">
+                            ${{ transaction.balance_after_transaction|floatformat:2|intcomma }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="px-6 py-12 text-center text-slate-400">
+                            No transactions recorded yet.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="bg-slate-950/90 border-t border-slate-800 font-bold text-white">
+                        <td class="px-6 py-4 text-right text-slate-400" colspan="3">Current Account Balance</td>
+                        <td class="px-6 py-4 text-right font-mono text-emerald-400 text-base">
+                            ${{ account.balance|floatformat:2|intcomma }}
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
 </div>
 {% endblock %}

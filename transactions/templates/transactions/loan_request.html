@@ -1,50 +1,71 @@
-{% extends 'base.html' %} 
+{% extends 'base.html' %}
+{% load humanize %}
+
 {% block head_title %}
-{{ title }}
-{% endblock %} 
+<title>Loan Management — NexusBank</title>
+{% endblock %}
+
 {% block body %}
-<div class="my-10 py-3 px-4 bg-white rounded-xl shadow-md">
-  <h1 class="font-bold text-3xl text-center pb-5 pt-2">Loan Report</h1>
-  <hr />
-  <table
-    class="table-auto mx-auto w-full px-5 rounded-xl mt-8 border dark:border-neutral-500"
-  >
-    <thead class="bg-purple-900 text-white text-left">
-      <tr
-        class="bg-gradient-to-tr from-indigo-600 to-purple-600 rounded-md py-2 px-4 text-white font-bold"
-      >
-        <th class="px-4 py-2">LOAN ID</th>
-        <th class="px-4 py-2">Loan Amount</th>
-        <th class="px-4 py-2">Loan Approved</th>
-        <th class="px-4 py-2">Action</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for loan in loans %}
-      <tr class="border-b dark:border-neutral-500">
-        <td class="px-4 py-2">
-         {{ loan.id }}
-        </td>
-        <td class="px-4 py-3 text-s border">
-          <span
-            class="px-2 py-1 font-bold leading-tight rounded-sm text-green-700 bg-green-100"
-          >
-            {{ loan.amount }}
-          </span>
-        </td>
-        <td class="px-4 py-2">
-          {{ loan.loan_approve }}
-        </td>
-        <td class="px-4 py-2">
-          {% if loan.loan_approve %}
-          <a class="font-bold bg-red-900 text-white hover:text-blue-900 hover:bg-white border border-blue-900 font-bold px-4 py-2 rounded-lg" href='{% url "payloan" loan.id %}'>Pay</a>
-          {% else %}
-          <p class="font-bold text-red-700 bg-red-100">Loan Pending</p>
-          {% endif %}
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+<div class="space-y-6 my-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <span class="text-xs font-semibold uppercase tracking-widest text-indigo-400">Credit & Financing</span>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-white mt-1">Loan Report & Repayments</h1>
+        </div>
+        <a href="{% url 'loan_request' %}" class="px-5 py-3 rounded-xl font-semibold bg-indigo-600 hover:bg-indigo-500 text-white text-sm shadow-lg shadow-indigo-600/25 transition">
+            + New Loan Request
+        </a>
+    </div>
+
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-950/80 border-b border-slate-800 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                        <th class="px-6 py-4">Loan ID</th>
+                        <th class="px-6 py-4">Requested Date</th>
+                        <th class="px-6 py-4">Loan Amount</th>
+                        <th class="px-6 py-4">Status</th>
+                        <th class="px-6 py-4 text-right">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/70 text-sm">
+                    {% for loan in loans %}
+                    <tr class="hover:bg-slate-800/40 transition">
+                        <td class="px-6 py-4 font-mono text-slate-300">#{{ loan.id }}</td>
+                        <td class="px-6 py-4 text-slate-400">{{ loan.time_stamp|date:"M d, Y" }}</td>
+                        <td class="px-6 py-4 font-mono font-bold text-white">${{ loan.amount|floatformat:2|intcomma }}</td>
+                        <td class="px-6 py-4">
+                            {% if loan.loan_approve %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                                Approved
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                                Pending Approval
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            {% if loan.loan_approve %}
+                            <a class="inline-block bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-4 py-2 rounded-xl shadow transition" href="{% url 'payloan' loan.id %}">
+                                Pay Loan
+                            </a>
+                            {% else %}
+                            <span class="text-xs text-slate-500 italic">Awaiting Admin Review</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center text-slate-400">
+                            You have no active or pending loan requests.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 {% endblock %}

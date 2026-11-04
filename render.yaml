@@ -1,0 +1,27 @@
+databases:
+  - name: bank-management-db
+    plan: free
+    databaseName: bank_management_project_01
+    user: bank_management_project_01_user
+
+services:
+  - type: web
+    name: banking-management-system
+    runtime: python
+    plan: free
+    autoDeploy: true
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn bankproject.wsgi:application"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: RENDER
+        value: "True"
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: bank-management-db
+          property: connectionString

@@ -1,6 +1,5 @@
-<p>Hello  {{sender.user.first_name}} {{sender.user.last_name}} ,</p>
-<p>Your Money Send Request : ${{amount}} To AC:{{receiver.account_no}} ,Receiver Name : {{receiver.user.first_name}} {{receiver.user.last_name}}<br>Has Been Successfully Complited !</p>
-<p>After Sending Money,Your Current Balance is : ${{balance}}</p>
+<p>Hello {{ sender.user.first_name }} {{ sender.user.last_name }},</p>
+<p>Your transfer of <strong>${{ amount }}</strong> to Account #{{ receiver.account_no }} ({{ receiver.user.first_name }} {{ receiver.user.last_name }}) was completed successfully.</p>
+<p>Your updated account balance is: <strong>${{ balance }}</strong></p>
 <hr>
-<p>Thanks For Banking With US </p>
-<p>Bank Project 01</p>
+<p>Thanks for banking with us,<br><strong>NexusBank</strong></p>

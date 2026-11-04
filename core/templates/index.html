@@ -1,30 +1,128 @@
-{% extends 'base.html' %} 
-{% load static %} 
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
 
 {% block head_title %}
-<title>Banking System</title>
-{% endblock %} 
+<title>NexusBank — Smart Digital Banking</title>
+{% endblock %}
 
 {% block body %}
+<div class="py-6 lg:py-12">
+    <!-- Hero Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-7 space-y-6">
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs font-semibold tracking-wide uppercase">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                Next-Gen Personal & Student Banking
+            </div>
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight">
+                Manage your money with <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-sky-400 to-emerald-400">complete confidence.</span>
+            </h1>
+            <p class="text-slate-300 text-lg leading-relaxed max-w-2xl">
+                Instant deposits, fast withdrawals, peer-to-peer account transfers, and transparent loan management—all in one secure, real-time banking portal.
+            </p>
 
+            {% if request.user.is_authenticated %}
+            <div class="flex flex-wrap gap-4 pt-2">
+                <a href="{% url 'diposit' %}" class="px-6 py-3.5 rounded-xl font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 transition">
+                    + Deposit Funds
+                </a>
+                <a href="{% url 'transfer_money' %}" class="px-6 py-3.5 rounded-xl font-semibold bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 transition">
+                    Send Money
+                </a>
+                <a href="{% url 'transaction_report' %}" class="px-6 py-3.5 rounded-xl font-semibold bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 transition">
+                    View Statement →
+                </a>
+            </div>
+            {% else %}
+            <div class="flex flex-wrap gap-4 pt-2">
+                <a href="{% url 'registration' %}" class="px-7 py-3.5 rounded-xl font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 transition">
+                    Create Free Account
+                </a>
+                <a href="{% url 'login' %}" class="px-7 py-3.5 rounded-xl font-semibold bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 transition">
+                    Sign In to Portal
+                </a>
+            </div>
+            {% endif %}
 
-<div class="container mx-auto flex flex-col md:flex-row items-center my-12 md:my-24">
+            <!-- Key Highlights -->
+            <div class="grid grid-cols-3 gap-4 pt-6 border-t border-slate-800/80">
+                <div>
+                    <p class="text-2xl font-extrabold text-white">0%</p>
+                    <p class="text-xs text-slate-400">Transfer Fees</p>
+                </div>
+                <div>
+                    <p class="text-2xl font-extrabold text-emerald-400">Instant</p>
+                    <p class="text-xs text-slate-400">Balance Updates</p>
+                </div>
+                <div>
+                    <p class="text-2xl font-extrabold text-indigo-400">24/7</p>
+                    <p class="text-xs text-slate-400">Loan & Statement Access</p>
+                </div>
+            </div>
+        </div>
 
-    
-    <div class="flex flex-col w-full lg:w-1/2 justify-center items-start pt-12 pb-24 px-6 bg-white rounded-2xl bg-opacity-70 mx-3">
-        <h1 class="font-bold text-4xl my-4">Welcome to Bank Project</h1>
-        <p class="leading-normal mb-4">
-            This is a simple Bank where you can deposit money, withdraw money, take loan. You can also create an account, login, logout.
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Sed nemo quaerat quo dicta, adipisci eum fuga ratione id numquam eius veniam placeat voluptatum, itaque tempora molestias vel, blanditiis fugiat ipsam!
+        <!-- Interactive Visual Banking Card Stack -->
+        <div class="lg:col-span-5">
+            <div class="relative rounded-3xl bg-gradient-to-b from-slate-800/90 to-slate-900/90 border border-slate-700/80 p-6 sm:p-8 shadow-2xl">
+                <!-- Virtual Card -->
+                <div class="rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-slate-900 p-6 text-white shadow-xl border border-indigo-400/30">
+                    <div class="flex justify-between items-start mb-8">
+                        <div>
+                            <p class="text-xs uppercase tracking-widest text-indigo-200">NexusBank Platinum</p>
+                            <p class="text-2xl font-extrabold mt-1">
+                                {% if request.user.is_authenticated %}
+                                    ${{ request.user.account.balance|floatformat:2|intcomma }}
+                                {% else %}
+                                    $24,850.00
+                                {% endif %}
+                            </p>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-white/15 backdrop-blur-sm">
+                            {% if request.user.is_authenticated %}
+                                {{ request.user.account.account_type }}
+                            {% else %}
+                                SAVINGS
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-between text-sm font-mono tracking-wider text-indigo-100">
+                        <span>•••• •••• ••••</span>
+                        <span>
+                            {% if request.user.is_authenticated %}
+                                {{ request.user.account.account_no }}
+                            {% else %}
+                                100042
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
 
-        </p>
-        <div class="flex justify-end w-full">
-            <a href="{% url 'registration' %}" class="bg-blue-900 text-white rounded-none hover:bg-white hover:text-blue-900 hover:border-blue-900 shadow hover:shadow-lg py-2 px-4 border border-gray-900 hover:border-transparent">Register</a>
+                <!-- Quick Feature Grid -->
+                <div class="grid grid-cols-2 gap-3 mt-6">
+                    <div class="p-4 rounded-2xl bg-slate-950/60 border border-slate-800">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-400 flex items-center justify-center font-bold mb-2">↓</div>
+                        <h3 class="text-sm font-bold text-white">Quick Deposit</h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Instant credit starting from $100</p>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-slate-950/60 border border-slate-800">
+                        <div class="w-8 h-8 rounded-lg bg-sky-500/15 text-sky-400 flex items-center justify-center font-bold mb-2">⇄</div>
+                        <h3 class="text-sm font-bold text-white">P2P Transfers</h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Send money by account number</p>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-slate-950/60 border border-slate-800">
+                        <div class="w-8 h-8 rounded-lg bg-amber-500/15 text-amber-400 flex items-center justify-center font-bold mb-2">★</div>
+                        <h3 class="text-sm font-bold text-white">Smart Loans</h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Request up to 3 active loans</p>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-slate-950/60 border border-slate-800">
+                        <div class="w-8 h-8 rounded-lg bg-purple-500/15 text-purple-400 flex items-center justify-center font-bold mb-2">📊</div>
+                        <h3 class="text-sm font-bold text-white">Live Reports</h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Filter statements by date range</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    <div class="w-full lg:w-1/2 lg:py-6 text-center ">
-        <img class ="rounded-2xl" src ="{% static './img/bank.jpg' %}"/>
-    </div>
 </div>
-
 {% endblock %}
